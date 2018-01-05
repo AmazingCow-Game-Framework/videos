@@ -14,7 +14,7 @@ Cheers!
 Background
 ~~~~~~~~~~
 If you've seen any of my videos - I like to do things using the windows console. It's quick
-and easy, and allows you to focus on just the code that matters - ideal when you're 
+and easy, and allows you to focus on just the code that matters - ideal when you're
 experimenting. Thing is, I have to keep doing the same initialisation and display code
 each time, so this class wraps that up.
 
@@ -70,7 +70,7 @@ the current cursor position, and m_mouse[1..5] returns the mouse buttons.
 The draw routines treat characters like pixels. By default they are set to white solid
 blocks - but you can draw any unicode character, using any of the colours listed below.
 
-There may be bugs! 
+There may be bugs!
 
 See my other videos for examples!
 http://www.youtube.com/javidx9
@@ -88,11 +88,10 @@ http://www.twitch.tv/javidx9
 
 #pragma once
 
-#ifndef UNICODE
-#error Please enable UNICODE for your compiler! VS: Project Properties -> General -> \
-Character Set -> Use Unicode. In Code::Blocks, include 'UNICODE' and '_UNICODE' as \
-pre-processor directives. Thanks! - Javidx9
-#endif
+
+// std
+#include <cstring>
+#include <cmath>
 
 #include <iostream>
 #include <chrono>
@@ -101,14 +100,280 @@ pre-processor directives. Thanks! - Javidx9
 #include <thread>
 #include <atomic>
 #include <condition_variable>
-using namespace std;
 
-#include <windows.h>
+// Windows
+#if _WIN32
+    #include <windows.h>
+
+    #ifndef UNICODE
+        #error Please enable UNICODE for your compiler! VS: Project Properties -> General -> \
+        Character Set -> Use Unicode. In Code::Blocks, include 'UNICODE' and '_UNICODE' as \
+        pre-processor directives. Thanks! - Javidx9
+    #endif
+#else
+
+#include <wchar.h>
+
+// wingdi.h
+#define LF_FACESIZE 32
+#define FF_DONTCARE (0 << 4)
+#define FW_NORMAL 400
+
+
+
+#define TRUE 1
+#define FALSE 0
+
+#define WINAPI
+
+// corecrt.h
+typedef int errno_t;
+
+// winnt.h
+typedef wchar_t WCHAR;
+typedef char    CHAR;
+typedef short   SHORT;
+typedef unsigned long DWORD;
+typedef void * HANDLE;
+typedef const WCHAR *LPCTSTR;
+
+// minwindef.h
+typedef unsigned long ULONG;
+typedef unsigned short WORD;
+typedef unsigned int   UINT;
+typedef unsigned int   BOOL;
+typedef DWORD  *LPDWORD;
+
+// basetsd.h
+typedef long LONG_PTR, *PLONG_PTR;
+
+
+//handleapi.h
+#define INVALID_HANDLE_VALUE ((HANDLE)(LONG_PTR)-1)
+
+// wincon.h
+#define MOUSE_EVENT 0x0002
+#define MOUSE_MOVED 0x0001
+
+#define ENABLE_EXTENDED_FLAGS 0x0080
+#define ENABLE_WINDOW_INPUT   0x0008
+#define ENABLE_MOUSE_INPUT    0x0010
+
+// WinBase.h
+#define STD_OUTPUT_HANDLE ((DWORD)-10)
+#define STD_INPUT_HANDLE  ((DWORD)-11)
+
+
+///
+typedef struct _CHAR_INFO {
+    union {
+        WCHAR UnicodeChar;
+        CHAR  AsciiChar;
+    } Char;
+    WORD  Attributes;
+} CHAR_INFO, *PCHAR_INFO;
+
+///
+typedef struct _SMALL_RECT {
+  SHORT Left;
+  SHORT Top;
+  SHORT Right;
+  SHORT Bottom;
+} SMALL_RECT, *PSMALL_RECT;
+
+///
+typedef struct _COORD {
+  SHORT X;
+  SHORT Y;
+} COORD;
+
+///
+typedef struct _CONSOLE_SCREEN_BUFFER_INFO {
+  COORD      dwSize;
+  COORD      dwCursorPosition;
+  WORD       wAttributes;
+  SMALL_RECT srWindow;
+  COORD      dwMaximumWindowSize;
+} CONSOLE_SCREEN_BUFFER_INFO, *PCONSOLE_SCREEN_BUFFER_INFO;
+
+
+///
+typedef struct _CONSOLE_FONT_INFOEX {
+  ULONG cbSize;
+  DWORD nFont;
+  COORD dwFontSize;
+  UINT  FontFamily;
+  UINT  FontWeight;
+  WCHAR FaceName[LF_FACESIZE];
+} CONSOLE_FONT_INFOEX, *PCONSOLE_FONT_INFOEX;
+
+
+
+
+///
+typedef struct _KEY_EVENT_RECORD {
+  BOOL  bKeyDown;
+  WORD  wRepeatCount;
+  WORD  wVirtualKeyCode;
+  WORD  wVirtualScanCode;
+  union {
+    WCHAR UnicodeChar;
+    CHAR  AsciiChar;
+  } uChar;
+  DWORD dwControlKeyState;
+} KEY_EVENT_RECORD;
+
+typedef struct _MOUSE_EVENT_RECORD {
+  COORD dwMousePosition;
+  DWORD dwButtonState;
+  DWORD dwControlKeyState;
+  DWORD dwEventFlags;
+} MOUSE_EVENT_RECORD;
+
+typedef struct _WINDOW_BUFFER_SIZE_RECORD {
+  COORD dwSize;
+} WINDOW_BUFFER_SIZE_RECORD;
+
+typedef struct _MENU_EVENT_RECORD {
+  UINT dwCommandId;
+} MENU_EVENT_RECORD, *PMENU_EVENT_RECORD;
+
+typedef struct _FOCUS_EVENT_RECORD {
+  BOOL bSetFocus;
+} FOCUS_EVENT_RECORD;
+
+typedef struct _INPUT_RECORD {
+  WORD  EventType;
+  union {
+    KEY_EVENT_RECORD          KeyEvent;
+    MOUSE_EVENT_RECORD        MouseEvent;
+    WINDOW_BUFFER_SIZE_RECORD WindowBufferSizeEvent;
+    MENU_EVENT_RECORD         MenuEvent;
+    FOCUS_EVENT_RECORD        FocusEvent;
+  } Event;
+} INPUT_RECORD, *PINPUT_RECORD;
+
+
+
+
+errno_t _wfopen_s(
+    FILE** pFile,
+    const wchar_t *filename,
+    const wchar_t *mode)
+{
+    //COWTODO
+}
+
+typedef size_t rsize_t;
+
+errno_t wcscpy_s(
+    wchar_t       *_Destination,
+    wchar_t const *_Source)
+{
+
+}
+
+int swprintf_s(
+   wchar_t *buffer,
+   size_t sizeOfBuffer,
+   const wchar_t *format,
+   ...
+)
+{
+
+}
+
+
+BOOL WINAPI SetConsoleTitle(
+  LPCTSTR lpConsoleTitle)
+{
+
+}
+
+BOOL WINAPI SetCurrentConsoleFontEx(
+  HANDLE               hConsoleOutput,
+  BOOL                 bMaximumWindow,
+  PCONSOLE_FONT_INFOEX lpConsoleCurrentFontEx)
+{
+
+}
+HANDLE WINAPI GetStdHandle(
+  DWORD nStdHandle)
+{
+
+}
+
+BOOL WINAPI SetConsoleWindowInfo(
+        HANDLE     hConsoleOutput,
+        BOOL       bAbsolute,
+  const SMALL_RECT *lpConsoleWindow)
+{
+
+}
+
+BOOL WINAPI SetConsoleScreenBufferSize(
+  HANDLE hConsoleOutput,
+  COORD  dwSize)
+{
+
+}
+
+BOOL WINAPI SetConsoleActiveScreenBuffer(
+  HANDLE hConsoleOutput)
+{
+
+}
+
+BOOL WINAPI GetConsoleScreenBufferInfo(
+  HANDLE                      hConsoleOutput,
+  PCONSOLE_SCREEN_BUFFER_INFO lpConsoleScreenBufferInfo);
+
+BOOL WINAPI SetConsoleMode(
+  HANDLE hConsoleHandle,
+  DWORD  dwMode)
+{
+
+}
+
+
+SHORT WINAPI GetAsyncKeyState(
+  int vKey
+)
+{
+
+}
+
+BOOL WINAPI GetNumberOfConsoleInputEvents(
+  HANDLE  hConsoleInput,
+  LPDWORD lpcNumberOfEvents
+);
+
+BOOL WINAPI ReadConsoleInput(
+  HANDLE        hConsoleInput,
+  PINPUT_RECORD lpBuffer,
+  DWORD         nLength,
+  LPDWORD       lpNumberOfEventsRead
+)
+{
+
+}
+
+BOOL WINAPI WriteConsoleOutput(
+        HANDLE      hConsoleOutput,
+  const CHAR_INFO   *lpBuffer,
+        COORD       dwBufferSize,
+        COORD       dwBufferCoord,
+        PSMALL_RECT lpWriteRegion)
+{
+
+}
+
+#endif
 
 enum COLOUR
 {
 	FG_BLACK		= 0x0000,
-	FG_DARK_BLUE    = 0x0001,	
+	FG_DARK_BLUE    = 0x0001,
 	FG_DARK_GREEN   = 0x0002,
 	FG_DARK_CYAN    = 0x0003,
 	FG_DARK_RED     = 0x0004,
@@ -143,10 +408,10 @@ enum COLOUR
 
 enum PIXEL_TYPE
 {
-	PIXEL_SOLID = 0x2588,
+	PIXEL_SOLID         = 0x2588,
 	PIXEL_THREEQUARTERS = 0x2593,
-	PIXEL_HALF = 0x2592,
-	PIXEL_QUARTER = 0x2591,
+	PIXEL_HALF          = 0x2592,
+	PIXEL_QUARTER       = 0x2591,
 };
 
 class olcSprite
@@ -162,7 +427,7 @@ public:
 		Create(w, h);
 	}
 
-	olcSprite(wstring sFile)
+	olcSprite(std::wstring sFile)
 	{
 		if (!Load(sFile))
 			Create(8, 8);
@@ -241,7 +506,7 @@ public:
 			return m_Colours[sy * nWidth + sx];
 	}
 
-	bool Save(wstring sFile)
+	bool Save(std::wstring sFile)
 	{
 		FILE *f = nullptr;
 		_wfopen_s(&f, sFile.c_str(), L"wb");
@@ -258,7 +523,7 @@ public:
 		return true;
 	}
 
-	bool Load(wstring sFile)
+	bool Load(std::wstring sFile)
 	{
 		delete[] m_Glyphs;
 		delete[] m_Colours;
@@ -275,8 +540,8 @@ public:
 
 		Create(nWidth, nHeight);
 
-		fread(m_Colours, sizeof(short), nWidth * nHeight, f);
-		fread(m_Glyphs, sizeof(wchar_t), nWidth * nHeight, f);
+		fread(m_Colours, sizeof(short),   nWidth * nHeight, f);
+		fread(m_Glyphs,  sizeof(wchar_t), nWidth * nHeight, f);
 
 		fclose(f);
 		return true;
@@ -293,7 +558,7 @@ public:
 		m_nScreenWidth = 80;
 		m_nScreenHeight = 30;
 
-		m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+		m_hConsole   = GetStdHandle(STD_OUTPUT_HANDLE);
 		m_hConsoleIn = GetStdHandle(STD_INPUT_HANDLE);
 
 		m_keyNewState = new short[256];
@@ -322,7 +587,7 @@ public:
 		// by way of useful information, and so the resulting sequence is the reult of experiment
 		// that seems to work in multiple cases.
 		//
-		// The problem seems to be that the SetConsoleXXX functions are somewhat circular and 
+		// The problem seems to be that the SetConsoleXXX functions are somewhat circular and
 		// fail depending on the state of the current console properties, i.e. you can't set
 		// the buffer size until you set the screen size, but you can't change the screen size
 		// until the buffer size is correct. This coupled with a precise ordering of calls
@@ -341,7 +606,7 @@ public:
 		// Assign screen buffer to the console
 		if (!SetConsoleActiveScreenBuffer(m_hConsole))
 			return Error(L"SetConsoleActiveScreenBuffer");
-		
+
 		// Set the font size now that the screen buffer has been assigned to the console
 		CONSOLE_FONT_INFOEX cfi;
 		cfi.cbSize = sizeof(cfi);
@@ -369,7 +634,7 @@ public:
 		if (!SetConsoleWindowInfo(m_hConsole, TRUE, &m_rectWindow))
 			return Error(L"SetConsoleWindowInfo");
 
-		// Set flags to allow mouse input		
+		// Set flags to allow mouse input
 		if (!SetConsoleMode(m_hConsoleIn, ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT))
 			return Error(L"SetConsoleMode");
 
@@ -398,7 +663,7 @@ public:
 				Draw(x, y, c, col);
 	}
 
-	void DrawString(int x, int y, wstring c, short col = 0x000F)
+	void DrawString(int x, int y, std::wstring c, short col = 0x000F)
 	{
 		for (size_t i = 0; i < c.size(); i++)
 		{
@@ -407,7 +672,7 @@ public:
 		}
 	}
 
-	void DrawStringAlpha(int x, int y, wstring c, short col = 0x000F)
+	void DrawStringAlpha(int x, int y, std::wstring c, short col = 0x000F)
 	{
 		for (size_t i = 0; i < c.size(); i++)
 		{
@@ -530,8 +795,10 @@ public:
 		}
 	}
 
-	void DrawWireFrameModel(const vector<pair<float, float>> &vecModelCoordinates, float x, float y, float r = 0.0f, float s = 1.0f, short col = FG_WHITE)
+	void DrawWireFrameModel(const std::vector<std::pair<float, float>> &vecModelCoordinates, float x, float y, float r = 0.0f, float s = 1.0f, short col = FG_WHITE)
 	{
+        using namespace std;
+
 		// pair.first = x coordinate
 		// pair.second = y coordinate
 
@@ -543,7 +810,7 @@ public:
 		// Rotate
 		for (int i = 0; i < verts; i++)
 		{
-			vecTransformedCoordinates[i].first = vecModelCoordinates[i].first * cosf(r) - vecModelCoordinates[i].second * sinf(r);
+			vecTransformedCoordinates[i].first = vecModelCoordinates[i].first  * cosf(r) - vecModelCoordinates[i].second * sinf(r);
 			vecTransformedCoordinates[i].second = vecModelCoordinates[i].first * sinf(r) + vecModelCoordinates[i].second * cosf(r);
 		}
 
@@ -579,6 +846,8 @@ public:
 public:
 	void Start()
 	{
+        using namespace std;
+
 		m_bAtomActive = true;
 
 		// Star the thread
@@ -597,7 +866,7 @@ public:
 		return m_nScreenWidth;
 	}
 
-	int ScreenHeight() 
+	int ScreenHeight()
 	{
 		return m_nScreenHeight;
 	}
@@ -605,6 +874,8 @@ public:
 private:
 	void GameThread()
 	{
+        using namespace std;
+
 		// Create user resources as part of this thread
 		if (!OnUserCreate())
 			m_bAtomActive = false;
@@ -614,7 +885,7 @@ private:
 
 		// Run as fast as possible
 		while (m_bAtomActive)
-		{				
+		{
 			// Handle Timing
 			tp2 = chrono::system_clock::now();
 			chrono::duration<float> elapsedTime = tp2 - tp1;
@@ -625,7 +896,7 @@ private:
 			for (int i = 0; i < 256; i++)
 			{
 				m_keyNewState[i] = GetAsyncKeyState(i);
-				
+
 				m_keys[i].bPressed = false;
 				m_keys[i].bReleased = false;
 
@@ -674,13 +945,13 @@ private:
 							{
 								for (int m = 0; m < 5; m++)
 									m_mouseNewState[m] = (inBuf[i].Event.MouseEvent.dwButtonState & (1 << m)) > 0;
-			
+
 							}
 							break;
 
 							default:
 								break;
-						}																	
+						}
 					}
 					break;
 
@@ -730,17 +1001,17 @@ private:
 public:
 	// User MUST OVERRIDE THESE!!
 	virtual bool OnUserCreate() = 0;
-	virtual bool OnUserUpdate(float fElapsedTime) = 0;	
+	virtual bool OnUserUpdate(float fElapsedTime) = 0;
 
 
 protected:
-	int m_nScreenWidth;
-	int m_nScreenHeight;
-	CHAR_INFO *m_bufScreen;
-	atomic<bool> m_bAtomActive;
-	condition_variable m_cvGameFinished;
-	mutex m_muxGame;
-	wstring m_sAppName;
+	int                     m_nScreenWidth;
+	int                     m_nScreenHeight;
+	CHAR_INFO              *m_bufScreen;
+	std::atomic<bool>       m_bAtomActive;
+	std::condition_variable m_cvGameFinished;
+	std::mutex              m_muxGame;
+	std::wstring            m_sAppName;
 
 	struct sKeyState
 	{
@@ -757,20 +1028,41 @@ protected:
 	int Error(const wchar_t *msg)
 	{
 		wchar_t buf[256];
-		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, 256, NULL);
-		SetConsoleActiveScreenBuffer(m_hOriginalConsole);
+        //COWTODO(
+//		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, 256, NULL);
+//		SetConsoleActiveScreenBuffer(m_hOriginalConsole);
 		wprintf(L"ERROR: %s\n\t%s\n", msg, buf);
 		return -1;
 	}
 
 private:
-	HANDLE m_hOriginalConsole;
+	HANDLE                     m_hOriginalConsole;
 	CONSOLE_SCREEN_BUFFER_INFO m_OriginalConsoleInfo;
-	HANDLE m_hConsole;
-	HANDLE m_hConsoleIn;
-	SMALL_RECT m_rectWindow;
-	short *m_keyOldState;
-	short *m_keyNewState;
-	bool m_mouseOldState[5];
-	bool m_mouseNewState[5];
+	HANDLE                     m_hConsole;
+	HANDLE                     m_hConsoleIn;
+	SMALL_RECT                 m_rectWindow;
+	short                     *m_keyOldState;
+	short                     *m_keyNewState;
+	bool                       m_mouseOldState[5];
+	bool                       m_mouseNewState[5];
 };
+
+
+class Game : public olcConsoleGameEngine
+{
+public:
+    bool OnUserCreate () override {
+        return true;
+    }
+
+    bool OnUserUpdate (float fElapsedTime) override {
+        return true;
+    }
+};
+
+int main()
+{
+    Game game;
+    game.ConstructConsole(120, 80, 6, 6);
+    game.Start();
+}
